@@ -205,54 +205,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Notification function
-    function showNotification(message, type) {
-        // Remove existing notification
-        const existingNotification = document.querySelector('.notification');
-        if (existingNotification) {
-            existingNotification.remove();
-        }
-        
-        // Create notification element
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.innerHTML = `
-            <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
-            <span>${message}</span>
-            <button class="notification-close">
-                <i class="fas fa-times"></i>
-            </button>
-        `;
-        
-        document.body.appendChild(notification);
-        
-        // Show notification
-        setTimeout(() => {
-            notification.classList.add('show');
-        }, 10);
-        
-        // Auto-remove after 5 seconds
-        setTimeout(() => {
-            notification.classList.remove('show');
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.remove();
-                }
-            }, 300);
-        }, 5000);
-        
-        // Close button
-        const closeBtn = notification.querySelector('.notification-close');
-        closeBtn.addEventListener('click', () => {
-            notification.classList.remove('show');
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.remove();
-                }
-            }, 300);
-        });
-    }
-    
     // Add notification styles dynamically
     const notificationStyles = document.createElement('style');
     notificationStyles.textContent = `
@@ -381,3 +333,133 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('%cAWS Certified Cloud Practitioner | Cloud Solutions Enthusiast', 'color: #0073bb; font-size: 14px;');
     console.log('%cPortfolio built with AWS services | Open to opportunities', 'color: #232f3e; font-size: 12px;');
 });
+
+// ===== NOTIFICATION FUNCTION (Moved outside DOMContentLoaded for global access) =====
+function showNotification(message, type) {
+    // Remove existing notification
+    const existingNotification = document.querySelector('.notification');
+    if (existingNotification) {
+        existingNotification.remove();
+    }
+    
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+        <span>${message}</span>
+        <button class="notification-close">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Show notification
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 10);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 300);
+    }, 5000);
+    
+    // Close button
+    const closeBtn = notification.querySelector('.notification-close');
+    closeBtn.addEventListener('click', () => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 300);
+    });
+}
+
+// ===== COPY CREDENTIAL ID FUNCTION =====
+function copyCredentialId() {
+    const credentialIdElement = document.getElementById('credentialId');
+    if (!credentialIdElement) {
+        console.error('Credential ID element not found');
+        return;
+    }
+    
+    const credentialId = credentialIdElement.textContent.trim();
+    
+    // Use the Clipboard API
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(credentialId)
+            .then(() => {
+                // Show success feedback
+                const copyBtn = document.querySelector('.copy-btn');
+                if (copyBtn) {
+                    const originalIcon = copyBtn.querySelector('i');
+                    const originalClass = originalIcon.className;
+                    
+                    // Change icon to checkmark
+                    originalIcon.className = 'fas fa-check';
+                    copyBtn.style.background = '#48bb78';
+                    
+                    // Reset icon after 2 seconds
+                    setTimeout(() => {
+                        originalIcon.className = originalClass;
+                        copyBtn.style.background = '';
+                    }, 2000);
+                }
+                
+                // Show notification
+                showNotification('Credential ID copied to clipboard!', 'success');
+            })
+            .catch(err => {
+                console.error('Failed to copy:', err);
+                showNotification('Failed to copy. Please try again.', 'error');
+            });
+    } else {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = credentialId;
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        textArea.style.left = '-9999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                // Show success feedback
+                const copyBtn = document.querySelector('.copy-btn');
+                if (copyBtn) {
+                    const originalIcon = copyBtn.querySelector('i');
+                    const originalClass = originalIcon.className;
+                    
+                    // Change icon to checkmark
+                    originalIcon.className = 'fas fa-check';
+                    copyBtn.style.background = '#48bb78';
+                    
+                    // Reset icon after 2 seconds
+                    setTimeout(() => {
+                        originalIcon.className = originalClass;
+                        copyBtn.style.background = '';
+                    }, 2000);
+                }
+                
+                showNotification('Credential ID copied to clipboard!', 'success');
+            } else {
+                showNotification('Failed to copy. Please try again.', 'error');
+            }
+        } catch (err) {
+            console.error('Fallback copy failed:', err);
+            showNotification('Failed to copy. Please try again.', 'error');
+        }
+        
+        document.body.removeChild(textArea);
+    }
+}
