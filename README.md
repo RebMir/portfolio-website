@@ -21,4 +21,4 @@ Browser → CloudFront (CDN) → S3 Bucket (Origin)
 - Availability: 99.9%
 
 ## 🔗 Live Demo
-https://d27pskzr824dig.cloudfront.net/
+https://d27pskzr824dig.cloudfront.net//
